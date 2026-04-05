@@ -1,0 +1,111 @@
+데이터 연습 2장 연습 2 _2026.03.31_김근하
+
+-- 테이블 생성
+CREATE TABLE Employee (
+    empno    NUMBER          PRIMARY KEY,
+    name     VARCHAR2(100)   NOT NULL,
+    phoneno  VARCHAR2(20),
+    address  VARCHAR2(200),
+    sex      VARCHAR2(5),
+    position VARCHAR2(50),
+    deptno   NUMBER
+ );
+ CREATE TABLE Department (
+    deptno   NUMBER          PRIMARY KEY,
+    deptname VARCHAR2(100)   NOT NULL,
+    manager  NUMBER
+ );
+ CREATE TABLE Project (
+    projno   NUMBER          PRIMARY KEY,
+    projname VARCHAR2(100)   NOT NULL,
+    deptno   NUMBER
+ );
+ CREATE TABLE Works (
+    empno        NUMBER,
+    projno       NUMBER,
+    hours_worked NUMBER,
+    CONSTRAINT pk_works PRIMARY KEY (empno, projno),
+    CONSTRAINT fk_works_emp  FOREIGN KEY (empno)  REFERENCES 
+Employee(empno),
+    CONSTRAINT fk_works_proj FOREIGN KEY (projno) REFERENCES 
+Project(projno)
+ );
+
+-- 외래키 추가
+
+ALTER TABLE Employee
+ ADD CONSTRAINT fk_emp_dept FOREIGN KEY (deptno) REFERENCES 
+Department(deptno);
+ ALTER TABLE Department
+ ADD CONSTRAINT fk_dept_mgr FOREIGN KEY (manager) REFERENCES 
+Employee(empno);
+ ALTER TABLE Project
+ ADD CONSTRAINT fk_proj_dept FOREIGN KEY (deptno) REFERENCES 
+Department(deptno);
+
+-- ============================================-- 예시 데이터 삽입-- ============================================-- Department (FK 순환 때문에 manager 나중에 UPDATE)
+
+ INSERT INTO Department VALUES (1, 'IT부서',   NULL);
+ INSERT INTO Department VALUES (2, '영업부서', NULL);
+ INSERT INTO Department VALUES (3, '기획부서', NULL);
+
+-- Employee
+
+ INSERT INTO Employee VALUES (101, '김철수', '010-1111-1111', '서울시 강남구', '남', '부장', 1);
+ INSERT INTO Employee VALUES (102, '이영희', '010-2222-2222', '서울시 강동구', '여', '과장', 1);
+ INSERT INTO Employee VALUES (103, '박민준', '010-3333-3333', '서울시 도봉구', '남', '대리', 2);
+ INSERT INTO Employee VALUES (104, '최수연', '010-4444-4444', '서울시 마포구', '여', '사원', 2);
+ INSERT INTO Employee VALUES (105, '정하늘', '010-5555-5555', '서울시 송파구', '남', '과장', 3);
+ INSERT INTO Employee VALUES (106, '한지민', '010-6666-6666', '서울시 용산구', '여', '사원', 1);
+
+-- Department manager 업데이트
+
+UPDATE Department SET manager = 101 WHERE deptno = 1;
+ UPDATE Department SET manager = 103 WHERE deptno = 2;
+ UPDATE Department SET manager = 105 WHERE deptno = 3;
+
+-- Project
+
+ INSERT INTO Project VALUES (1, '미래',     1);
+ INSERT INTO Project VALUES (2, '스마트시티', 2);
+ INSERT INTO Project VALUES (3, '디지털전환', 1);
+
+-- Works
+
+ INSERT INTO Works VALUES (101, 1, 40);
+ INSERT INTO Works VALUES (102, 1, 35);
+ INSERT INTO Works VALUES (103, 2, 50);
+ INSERT INTO Works VALUES (104, 2, 30);
+ INSERT INTO Works VALUES (105, 3, 45);
+ INSERT INTO Works VALUES (106, 1, 20);
+ INSERT INTO Works VALUES (101, 3, 25);
+ 
+COMMIT;
+update employee set sex = '남' where empno = 101;
+update employee set sex = '여' where empno = 102;
+update employee set sex = '남' where empno = 103;
+update employee set sex = '여' where empno = 104;
+update employee set sex = '남' where empno = 105;
+update employee set sex = '여' where empno = 106;
+
+
+
+3)모든 직원의 이름을 보이시오
+select e.name from Employee e; 
+4)성별이 여자인 직원의 이름을 보이시오
+select e.name from Employee e where e.sex = '여';
+5)부서장(manager)의 이름과 주소를 보이시오
+SELECT e.name, e.address
+FROM Employee e 
+JOIN Department d ON e.empno = d.manager;
+6)IT부서에서 근무하는 직원의 이름과 주소를 보이시오
+SELECT d.deptname, e.name, e.address
+FROM Employee e 
+JOIN Department d ON e.deptno = d.deptno
+WHERE d.deptname = 'IT부서';
+
+7)‘미래’라는 이름의 프로젝트에서 일하는 직원의이름을 보이시오  
+SELECT p.projname, e.name
+FROM Employee e
+JOIN Project p ON p.deptno = e.deptno
+WHERE p.projname = '미래';

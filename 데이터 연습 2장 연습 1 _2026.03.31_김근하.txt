@@ -1,0 +1,126 @@
+데이터 연습 2장 연습 1 _2026.03.31_김근하
+
+==========================================-- 테이블 생성-- ============================================-- 승객 테이블
+CREATE TABLE Passenger (
+    pid     NUMBER          PRIMARY KEY,
+    pname   VARCHAR2(100)   NOT NULL,
+    pgender VARCHAR2(5),
+    pcity   VARCHAR2(100)
+ );-- ============================================-- 테이블 생성-- ============================================-- 승객 테이블
+CREATE TABLE Passenger (
+    pid     NUMBER          PRIMARY KEY,
+    pname   VARCHAR2(100)   NOT NULL,
+    pgender VARCHAR2(5),
+    pcity   VARCHAR2(100)
+ );-- 여행사 테이블
+CREATE TABLE Agency (
+    aid     NUMBER          PRIMARY KEY,
+    aname   VARCHAR2(100)   NOT NULL,
+    acity   VARCHAR2(100)
+);-- 항공편 테이블
+CREATE TABLE Flight (
+    fid     NUMBER          PRIMARY KEY,
+    fdate   DATE            NOT NULL,
+    time    VARCHAR2(10),
+    src     VARCHAR2(100),
+    dest    VARCHAR2(100)
+ );-- 예약 테이블
+CREATE TABLE Booking (
+    pid     NUMBER,
+    aid     NUMBER,
+    fid     NUMBER,
+    fdate   DATE,
+    CONSTRAINT pk_booking   PRIMARY KEY (pid, aid, fid),
+    CONSTRAINT fk_book_pass FOREIGN KEY (pid) REFERENCES Passenger(pid),
+    CONSTRAINT fk_book_agen FOREIGN KEY (aid) REFERENCES Agency(aid),
+    CONSTRAINT fk_book_flig FOREIGN KEY (fid) REFERENCES Flight(fid)
+ );-- ============================================-- 예시 데이터 삽입-- ============================================-- 승객 데이터 (승객번호 100번 포함)
+ INSERT INTO Passenger VALUES (100, '김철수', '남', '서울시 강남구');
+ INSERT INTO Passenger VALUES (101, '이영희', '여', '서울시 강동구');
+ INSERT INTO Passenger VALUES (102, '박민준', '남', '서울시 도봉구');
+ INSERT INTO Passenger VALUES (103, '최수연', '여', '서울시 마포구');
+ INSERT INTO Passenger VALUES (104, '홍길동', '남', '서울시 송파구');-- 여행사 데이터
+INSERT INTO Agency VALUES (1, '마당여행사',   '서울시 강남구');
+ INSERT INTO Agency VALUES (2, '하늘여행사',   '서울시 강동구');
+ INSERT INTO Agency VALUES (3, '바람여행사',   '서울시 도봉구');-- 항공편 데이터 (항공편 100번: 김포→제주 포함)
+INSERT INTO Flight VALUES (100, TO_DATE('2025-01-15', 'YYYY-MM-DD'), 
+'09:00', '김포', '제주');
+ INSERT INTO Flight VALUES (101, TO_DATE('2025-01-20', 'YYYY-MM-DD'), 
+'11:00', '김포', '제주');
+ INSERT INTO Flight VALUES (102, TO_DATE('2025-01-25', 'YYYY-MM-DD'), 
+'14:00', '김포', '부산');
+ INSERT INTO Flight VALUES (103, TO_DATE('2024-12-31', 'YYYY-MM-DD'), 
+'16:00', '김포', '제주');  -- 2025년 이전
+INSERT INTO Flight VALUES (104, TO_DATE('2025-02-01', 'YYYY-MM-DD'), 
+'18:00', '부산', '제주');-- 예약 데이터 (승객 100번이 2025년 1월 1일 이후 탑승 포함)-- 100번 승객 예약 (2025년 이후)
+ INSERT INTO Booking VALUES (100, 1, 100, TO_DATE('2025-01-15', 
+'YYYY-MM-DD'));  -- ✅ 김포→제주 100번 항공편
+INSERT INTO Booking VALUES (100, 2, 101, TO_DATE('2025-01-20', 
+'YYYY-MM-DD'));  -- ✅ 김포→제주 101번 항공편
+cccc -- ✅ 부산→제주-- 100번 승객 예약 (2025년 이전 - 비교용)
+ INSERT INTO Booking VALUES (100, 3, 103, TO_DATE('2024-12-31', 
+'YYYY-MM-DD'));  -- ❌ 2025년 이전-- 다른 승객 예약
+INSERT INTO Booking VALUES (101, 1, 100, TO_DATE('2025-01-15', 
+'YYYY-MM-DD'));
+ INSERT INTO Booking VALUES (102, 2, 101, TO_DATE('2025-01-20', 
+'YYYY-MM-DD'));
+ INSERT INTO Booking VALUES (103, 3, 102, TO_DATE('2025-01-25', 
+'YYYY-MM-DD'));
+ INSERT INTO Booking VALUES (104, 1, 103, TO_DATE('2024-12-31', 
+'YYYY-MM-DD'));
+ COMMIT;-- ============================================-- 검증 쿼리-- ============================================
+1)도착지가 제주인 항공편에 대한 정보를 보이시오
+ select * from Flight where dest = '제주';
+2)출발지가 김포(src)이고 도착지가 제주(dest)인 항공편에 대한 정보를 보이시오
+ select * from Flight where dest = '제주' and src = '김포';  (관계를 엮을 경우 'and' , 'or' 을 써야함)
+3)고객번호가 100번인 승객이 2025년1월 1일 이후에 탑승한 비행기 번호(fid)를 보이시오
+select f.fid from Flight f  join Booking b on f.fid = b.fid join Passenger p on p.pid = b.pid where b.fdate > to_date('2025-01-01', 'YYYY-MM-DD') and p.pid = 100;
+4)예약을 한 적이 있는 고객의 이름(pname)을 보이시오
+select distinct p.pname from passenger p where exists (select 1 from booking b where b.pid = p.pid);
+5)예약을 한 적이 없는 고객의 이름(pname)을 보이시오 
+select distinct p.pname from passenger p where not exists (select 1 from booking b where b.pid = p.pid);
+6)고객번호가 100번인 승객이 거주하는 도시(pcity)와 같은 도시에 위치한 여행사(aname)의 
+이름을 보이시오
+   select a.aname, a.acity from Agency a join Passenger p on p.pcity = a.acity where p.pid = 100; 
+7)2025년 1월 1일부터 1월 30일 사이에 출발시각이 16:00이후인 항공편 정보를 보이시오
+보충설명
+SELECT *
+FROM Flight f
+WHERE f.fdate >= TO_DATE('2025-01-01', 'YYYY-MM-DD')
+  AND f.fdate <= TO_DATE('2025-01-30', 'YYYY-MM-DD')
+  AND f.time > '16:00';
+
+8)고객번호가 100번인 승객이 한 번도 예약하지 않은 여행사의 이름(aname)을 보이시오
+SELECT DISTINCT a.aname
+FROM Agency a
+WHERE a.aid NOT IN (
+    SELECT b.aid
+    FROM Booking b
+    WHERE b.pid = '100');
+9)마당여행사(aname)를 통해 예약한 남자 승객(pgender)의 정보를 보이시오
+SELECT DISTINCT p.*
+FROM Passenger p 
+JOIN Booking b ON p.pid = b.pid   -- 승객과 예약 정보를 연결
+JOIN Agency a ON b.aid = a.aid     -- 예약 정보와 여행사를 연결
+WHERE p.pgender = '남' 
+  AND a.aname = '마당여행사';
+
+
+
+Oracle에서 time이 VARCHAR2로 저장된 경우와 DATE로 저장된 경우에 따라 다르게 처
+리해야 함
+sql-- time이 VARCHAR2('HH:MM')인 경우
+AND time >= '16:00'-- 1) 항공편 100번인 승객이 2025년 1월 1일 이후 탑승한 데이터
+SELECT p.pid, p.pname, f.fid, f.src, f.dest, b.fdate
+ FROM Passenger p
+ JOIN Booking b ON p.pid = b.pid
+ JOIN Flight f  ON b.fid = f.fid
+ WHERE f.fid = 100
+ AND b.fdate > TO_DATE('2025-01-01', 'YYYY-MM-DD');-- 2) 승객 100번이 2025년 1월 1일 이후 탑승한 데이터
+SELECT p.pid, p.pname, f.fid, f.src, f.dest, b.fdate
+ FROM Passenger p
+ JOIN Booking b ON p.pid = b.pid
+ JOIN Flight f  ON b.fid = f.fid
+ WHERE p.pid = 100
+ AND b.fdate > TO_DATE('2025-01-01', 'YYYY-MM-DD');
+ ```
