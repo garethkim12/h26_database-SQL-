@@ -1,0 +1,81 @@
+문제 24[인사부서 데이터베이스]
+
+ (1)교재 질의
+⓵Employees와 Departments테이블에 저장된 튜플의 개수를 출력하시오.
+ 
+SELECT COUNT(*) FROM Employees;
+
+⓶Employees테이블에 대한 employee_id, job_id, hire_date,를 출력하시오.
+
+SELECT employee_id, job_id, hire_date FROM Employees;
+ 
+⓷Employees테이블에서 salary가 12,000이상인 last_name과 salary를 출력하시오.
+
+SELECT last_name, salary FROM Employees WHERE salary >= 12000; 
+
+⓸부서번호(department_id)가 20 혹은 50인 직원의 last_name과 department_id를 
+last_name에 대하여 오름차순으로 출력하시오.
+
+SELECT last_name, department_id FROM Employees WHERE department_id IN (20, 50) ORDER BY last_name ASC; 
+
+⑤last_name의 세 번째에 a가 들어가는 직원의 last_name을 출력하시오.
+
+SELECT last_name FROM Employees WHERE last_name LIKE '__a%'; 
+
+⓺같은 일(job)을 하는 사람의 수를 세어 출력하시오
+
+SELECT job_id, COUNT(*) FROM Employees GROUP BY job_id;
+
+⓻급여(salary)의 최대값과 최소값의 차이를 구하시오.
+ 
+SELECT MAX(salary) - MIN(salary) AS "급여 차이" FROM Employees;
+
+⓼Toronto에서 일하는 직원의 last_name, job,department_id,Department_name을 출력하
+시오.
+ 
+SELECT e.last_name, e.job_id, e.department_id, d.department_name 
+FROM Employees e JOIN Departments d ON e.department_id = d.department_id JOIN Locations l ON d.location_id = l.location_id 
+WHERE l.city = 'Toronto';
+
+(2)부속질의
+
+⓵전체 직원 평균 급여보다 많이 받는 직원의 last_name과 salary를 출력하시오
+
+SELECT last_name, salary FROM Employees WHERE salary > (SELECT AVG(salary) FROM Employees);
+
+⓶dea hann과 같은 job_id를 가진 직원의 last_name과 job_id를 출력하시오.
+
+SELECT last_name, job_id FROM Employees WHERE job_id = (SELECT job_id FROM Employees WHERE last_name = 'De Haan'); 
+
+⓷부서별 최고 급여를 받는 직원의 last_name, department_id를 출력하시오.
+ 
+SELECT last_name, department_id FROM Employees WHERE (department_id, salary) IN (SELECT department_id, MAX(salary) FROM Employees GROUP BY department_id);
+
+⓸IT부서 직원의 평균 급여보다 많이 받는 직원의  last_name과 salary를 출력하시오.
+ 
+SELECT last_name, salary FROM Employees WHERE salary > (SELECT AVG(e.salary) FROM Employees e JOIN Departments d ON e.department_id = d.department_id WHERE d.department_name = 'IT');
+
+⑤직무이력(JOB_HISTORY)이 있는 직원의 last_name과 현재 job_id를 출력하시오.
+ 
+SELECT last_name, job_id FROM Employees WHERE employee_id IN (SELECT employee_id FROM Job_History);
+
+⓺직무이력이 없는 직원의 last_name과 employee_id를 출력하시오.
+ 
+SELECT last_name, employee_id FROM Employees WHERE employee_id NOT IN (SELECT employee_id FROM Job_History);
+
+⓻급여가 자신이 속한 부서 평균보다 높은 직원의 이름,급여,부서번호를 출력하시오(상관부속
+질의)
+
+SELECT e1.last_name, e1.salary, e1.department_id FROM Employees e1 WHERE e1.salary > (SELECT AVG(e2.salary) FROM Employees e2 WHERE e2.department_id = e1.department_id);
+
+⓼kochhar(101)를 관리자로 두는 직원의 이름과 급여를 출력하시오.
+ 
+SELECT last_name, salary FROM Employees WHERE manager_id = (SELECT employee_id FROM Employees WHERE last_name = 'Kochhar');
+
+⓽급여 최상위 3명의 last_name과 salary를 출력하시오.
+ 
+SELECT last_name, salary FROM (SELECT last_name, salary FROM Employees ORDER BY salary DESC) WHERE ROWNUM <= 3;
+
+⓾FI_ACCOUNT 직원 중 급여가 FI_ACCOUNT 평균보다 높은 직원을 출력하시오
+
+SELECT * FROM Employees WHERE job_id = 'FI_ACCOUNT' AND salary > (SELECT AVG(salary) FROM Employees WHERE job_id = 'FI_ACCOUNT');

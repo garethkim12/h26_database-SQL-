@@ -1,0 +1,701 @@
+23번 [사원 데이터베이스]
+
+Dept(
+depno NUMBER(2), 
+dname VARCHAR(14), 
+loc VARCHAR(13))
+
+Emp(
+empno NUMBER(4), 
+ename VARCHAR(10), 
+job VARCHAR(9),
+mgr NUMBER(4), 
+hiredate DATE, 
+sal NUMBER(7,2), 
+comm NUMBER(7,2), 
+deptno NUMBER(2))
+
+
+
+(1)교재 질의 
+
+⓵사원의 이름v과 업무v를 출력하시오. 단 사원의 이름은 ‘사원이름’, ‘업무는 ’사원업무‘, 머리글
+이 나오도록 출력하시오.
+-.입력
+SELECT ename AS "사원이름", job AS "사원업무"
+FROM Emp
+;
+-. 출력
+
+사원이름             사원업무
+-------------------- ------------------
+SMITH                CLERK
+ALLEN                SALESMAN
+WARD                 SALESMAN
+JONES                MANAGER
+MARTIN               SALESMAN
+BLAKE                MANAGER
+CLARK                MANAGER
+SCOTT                ANALYST
+KING                 PRESIDENT
+TURNER               SALESMAN
+ADAMS                CLERK
+
+사원이름             사원업무
+-------------------- ------------------
+JAMES                CLERK
+FORD                 ANALYST
+MILLER               CLERK
+
+⓶30번 부서에 근무하는 모든 사원의 이름과 급여를 출력하시오
+-.입력
+SELECT ename, sal FROM Emp WHERE deptno = 30;
+
+-. 출력
+ENAME                       SAL
+-------------------- ----------
+ALLEN                      1600
+WARD                       1250
+MARTIN                     1250
+BLAKE                      2850
+TURNER                     1500
+JAMES                       950
+
+⓷사원번호와 이름, 현재급여, 증가된 급여분(열 이름은  증가액), 10% 인상된 급여(열 이름은  
+’인상된 급여‘)를 사원 번호 순으로 출력하시오.
+-. 입력
+SELECT empno, ename, sal, sal * 1.1 AS "증가액" , sal * 0.1 AS "인상된 급여" 
+FROM Emp
+ORDER BY empno ASC
+;
+
+-. 출력
+ EMPNO ENAME                       SAL     증가액 인상된 급여
+---------- -------------------- ---------- ---------- -----------
+      7369 SMITH                       800        880          80
+      7499 ALLEN                      1600       1760         160
+      7521 WARD                       1250       1375         125
+      7566 JONES                      2975     3272.5       297.5
+      7654 MARTIN                     1250       1375         125
+      7698 BLAKE                      2850       3135         285
+      7782 CLARK                      2450       2695         245
+      7788 SCOTT                      3000       3300         300
+      7839 KING                       5000       5500         500
+      7844 TURNER                     1500       1650         150
+      7876 ADAMS                      1100       1210         110
+
+     EMPNO ENAME                       SAL     증가액 인상된 급여
+---------- -------------------- ---------- ---------- -----------
+      7900 JAMES                       950       1045          95
+      7902 FORD                       3000       3300         300
+      7934 MILLER                     1300       1430         130
+
+⓸’S’로 시작하는 모든 사원과 부서번호를 출력하시오.
+-. 입력
+SELECT e.ename, d.deptno 
+FROM Emp e JOIN Dept d
+ON e.deptno = d.deptno
+WHERE e.ename LIKE 'S%';
+
+-. 출력
+ENAME                    DEPTNO
+-------------------- ----------
+SMITH                        20
+SCOTT                        20
+
+⑤모든 사원의 최대 및 최소 급여, 합계 및 평균 급여를 출력하시오. 열이름은 각각 MAX, 
+MIN, SUM, AVG로 한다. 단 소수점 이하는 반올림하여 정수로 출력한다.
+-. 입력 
+SELECT MAX(sal) AS "MAX", MIN(sal) AS "MIN", SUM(sal) AS "SUM", ROUND (AVG(sal)) AS "AVG"
+FROM Emp;  
+
+-. 출력
+       MAX        MIN        SUM        AVG
+---------- ---------- ---------- ----------
+      5000        800      29025       2073
+
+⓺업무(job)별로 동일한 업무를 하는 사원의 수를 출력하시오. 열이름은 각각 ‘업무’ 와 ‘업무
+별 사원수’로 한다.
+-. 입력
+SELECT job AS "업무", COUNT(*) AS "업무별 사원수"
+FROM Emp    
+GROUP BY  job;
+
+-. 출력
+업무               업무별 사원수
+------------------ -------------
+CLERK                          4
+SALESMAN                       4
+MANAGER                        3
+ANALYST                        2
+PRESIDENT                      1
+
+⓻사원의 최대 급여와 최소 급여의 차액을 출력하시오.
+-. 입력
+SELECT MAX(sal) - MIN(sal) AS  "최대 최소 차액 급여"
+FROM Emp
+;
+
+-. 출력
+최대 최소 차액 급여
+-------------------
+               4200
+
+⓼30번 부서의 사원 수와 사원들 급여의 합계와 평균을 출력하시오.
+
+-. 입력
+SELECT  COUNT(d.deptno) AS "30번 부서 사원 수", SUM(e.sal) AS "급여 합계", ROUND(AVG(e.sal)) AS "급여 평균"
+FROM Dept d JOIN Emp e
+ON d.deptno = e.deptno
+WHERE d.deptno  = 30;
+
+-. 출력
+30번 부서 사원 수  급여 합계  급여 평균
+----------------- ---------- ----------
+                6       9400       1567
+
+⓽평균 급여가 가장 높은 부서의 번호를 출력하시오.
+-. 입력
+SELECT deptno,  ROUND(AVG(sal))
+FROM Emp
+GROUP BY deptno
+HAVING AVG(sal) = (
+SELECT MAX(AVG(sal)) 
+FROM Emp GROUP BY deptno
+);
+
+-. 출력
+
+    DEPTNO ROUND(AVG(SAL))
+---------- ---------------
+        10            2917
+⓾세일즈맨(SALESMAN)을 제외하고, 각 업무별 사원의 총급여가 3,000이상인 가가 업무에 대
+해서, 업무명과 각 업무별 평균 급여를 출력하시오.
+
+-. 입력
+SELECT  job AS "업무 명", ROUND(AVG(sal)) AS "평균 급여"
+FROM  Emp 
+WHERE job NOT IN 'SALESMAN'
+GROUP BY job
+HAVING SUM(sal) >= 3000;
+
+-. 출력
+업무 명             평균 급여
+------------------ ----------
+CLERK                    1038
+MANAGER                  2758
+ANALYST                  3000
+PRESIDENT                5000
+
+
+⑪전체 사원 가운데 직속상관이 있는 사원의 수를 출력하시오.
+ -. 입력 (오답)
+SELECT COUNT(empno) AS "직속상관이 있는 사원의 수"
+FROM Emp
+WHERE mgr IN empno;
+
+  -. 입력 (수정)
+SELECT COUNT(*) AS "직속상관이 있는 사원의 수" 
+FROM Emp
+WHERE mgr IS NOT NULL;
+
+  -. 출력 
+직속상관이 있는 사원의 수
+-------------------------
+                       13
+
+⑫EMP 테이블에서 이름, 급여, 커미션 금액(comm), 총액(sal*12+comm)을 구하여 총액이 많
+은 순서대로 출력하시오.
+  -. 입력 (오답)
+SELECT ename AS "이름", sal AS "급여", comm AS "금액", sal*12+comm AS "총액"
+FROM Emp
+WHERE ASC
+;
+  -. 입력 (수정) (ORDER BY는 특정 조건으로 순서를 나열할 때)
+SELECT  ename AS "이름", sal AS "급여", comm AS "금액", sal*12+comm AS "총액"
+FROM Emp
+ORDER BY "총액" DESC;
+
+   -. 출력
+
+이름                       급여       금액       총액
+-------------------- ---------- ---------- ----------
+SMITH                       800
+CLARK                      2450
+FORD                       3000
+JAMES                       950
+ADAMS                      1100
+JONES                      2975
+BLAKE                      2850
+MILLER                     1300
+SCOTT                      3000
+KING                       5000
+ALLEN                      1600        300      19500
+
+이름                       급여       금액       총액
+-------------------- ---------- ---------- ----------
+TURNER                     1500          0      18000
+MARTIN                     1250       1400      16400
+WARD                       1250        500      15500
+⑬부서별로 같은 업무를 하는 사람의 인원수를 구하여 부서번호, 업무 이름, 인원수를 출력하
+시오.
+
+SELECT deptno, job, COUNT(*) FROM Emp GROUP BY deptno, job;
+ 
+⑭사원이 한 명도 없는 부서의 이름을 출력하시오.
+ 
+SELECT dname FROM Dept WHERE deptno NOT IN (SELECT DISTINCT deptno FROM Emp);
+
+⑮같은 업무를 하는 사람의 수가 4명 이상인 업무와 인원수를 출력하시오.
+ 
+SELECT job, COUNT(*) FROM Emp GROUP BY job HAVING COUNT(*) >= 4;
+
+⑯사원번호가 7400 이상 7600 이하인 사원의 이름을 출력하시오.
+
+SELECT ename FROM Emp WHERE empno BETWEEN 7400 AND 7600;
+
+⑰사원의 이름과 사원의 부서이름을 출력하시오.
+
+SELECT e.ename, d.dname FROM Emp e JOIN Dept d ON e.deptno = d.deptno;
+ 
+⑱사원의 이름과 팀장(mgr)의 이름을 출력하시오.
+ 
+SELECT e.ename, m.ename FROM Emp e JOIN Emp m ON e.mgr = m.empno;
+
+⑲사원 SCOTT보다 급여를  많이 받는 사람의 이름을 출력하시오.
+ 
+SELECT ename FROM Emp WHERE sal > (SELECT sal FROM Emp WHERE ename = 'SCOTT');
+
+⑳사원 SCOTT이 일하는 부서번호 혹은 DALLAS 에 있는 부서번호를 출력하시오
+
+SELECT deptno FROM Emp WHERE ename = 'SCOTT' UNION SELECT deptno FROM Dept WHERE loc = 'DALLAS';
+
+(2)단순질의
+⓵comm(커미션)이 NULL이 아닌 사원의 이름과 커미션을 출력하시오.
+ SELECT ename, comm FROM Emp WHERE comm IS NOT NULL;
+
+
+ALLEN, 300 / WARD, 500
+
+⓶급여가 1500이상 3000 이하인 사원의 이름과 급여를 급여 오름차순으로 출력하시오.
+ 
+SELECT ename, sal FROM Emp WHERE sal BETWEEN 1500 AND 3000 ORDER BY sal ASC;
+
+ALLEN, 1600 / SCOTT, 3000
+
+⓷1981년에 입사한 사원의 이름과 입사일을 출력하시오.
+ 
+SELECT ename, hiredate FROM Emp WHERE hiredate LIKE '81/%';
+
+ALLEN, 1981-02-20
+
+⓸이름의 세 번째 글자가  ‘A’인 사원을 출력하시오.
+
+SELECT ename FROM Emp WHERE ename LIKE '__A%'; 
+
+ADAMS, BLAKE
+
+⑤사원의 이름을 소문자로 출력하시오.
+ 
+SELECT LOWER(ename) FROM Emp;
+
+smith, allen, ward
+
+⓺사원 이름, 입사일, 오늘까지의 근무 개월 수를 출력하시오.
+
+SELECT ename, hiredate, TRUNC(MONTHS_BETWEEN(SYSDATE, hiredate)) FROM Emp; 
+
+SMITH, 1980-12-17, 544
+
+⓻사원 이름과 이름의 글자 수를 글자 수 내림차순으로 출력하시오.
+ 
+SELECT ename, LENGTH(ename) FROM Emp ORDER BY LENGTH(ename) DESC;
+
+MILLER, 6 / MARTIN, 6
+
+⓼comm이 NULL이면 0으로 대체하여 총소득(sal+comm)을 출력하시오.
+ 
+SELECT ename, sal + NVL(comm, 0) FROM Emp;
+
+SMITH, 800 (800+0)
+
+⓽ANALYST 또는 PRESIDENT인 사원의 이름, 업무, 급여를 출력하시오.
+
+SELECT ename, job, sal FROM Emp WHERE job IN ('ANALYST', 'PRESIDENT'); 
+
+SCOTT, ANALYST, 3000
+
+⓾이름 길이가 긴 순, 같으면 알파벳 순으로 사원 이름을 출력하시오.
+ 
+SELECT ename FROM Emp ORDER BY LENGTH(ename) DESC, ename ASC;
+
+MARTIN, 6 / MILLER, 6
+
+(3)부속질의
+
+⓵JONES와 같은 부서에 근무하는 사원의 이름을 출력하시오(JONES본인 제외)
+
+SELECT ename 
+FROM Emp 
+WHERE deptno = 
+(SELECT deptno 
+FROM Emp 
+WHERE ename = 'JONES') AND ename != 'JONES';
+
+FORD, SCOTT
+ 
+⓶각 부서에서 가장 높은 급여를 받는 사원의 이름, 급여, 부서번호를 출력하시오.
+
+SELECT ename, sal, deptno 
+FROM Emp 
+WHERE (deptno, sal) IN (
+SELECT deptno, MAX(sal) 
+FROM Emp 
+GROUP BY deptno);
+
+KING, 5000, 10
+ 
+⓷30번 부서 평균 급여보다 급여가 높은 사원의 이름과 급여를 출력하시오.
+
+SELECT ename, sal 
+FROM Emp 
+WHERE sal > (
+SELECT AVG(sal) 
+FROM Emp 
+WHERE deptno = 30);
+
+KING, FORD
+
+⓸MANAGER 직급 평균 급여보다 적은 CLERK 사원의 이름과 급여를 출력하시오.
+
+SELECT ename, sal 
+FROM Emp 
+WHERE job = 'CLERK' 
+AND sal < (
+SELECT AVG(sal) 
+FROM Emp 
+WHERE job = 'MANAGER');
+
+SMITH, ADAMS
+
+⑤업무별 최고 급여를 받는 사원의 이름, 업무, 급여를 출력하시오.
+
+SELECT ename, job, sal 
+FROM Emp 
+WHERE (job, sal) IN (
+SELECT job, MAX(sal) 
+FROM Emp 
+GROUP BY job);
+
+⓺KING에게 직접 보고하는 사원의 이름과 업무를 출력하시오.
+
+SELECT ename, job 
+FROM Emp 
+WHERE mgr = (
+SELECT empno 
+FROM Emp 
+WHERE ename = 'KING');
+ 
+JONES, BLAKE
+
+⓻입사일이 가장 최근인 사원과 가장 오래된 사원을 함께 출력하시오.
+SELECT ename, hiredate 
+FROM Emp 
+WHERE hiredate = (
+SELECT MIN(hiredate) 
+FROM Emp) OR hiredate = (
+SELECT MAX(hiredate) 
+FROM Emp);
+
+SMITH, ADAMS
+
+ ⓼전체 평균 급여보다 급여가 높고 직위가 MANAGER인 사원을 출력하시오.
+SELECT * 
+FROM Emp 
+WHERE job = 'MANAGER' AND sal > (
+SELECT AVG(sal) 
+FROM Emp);
+
+JONES, BLAKE
+
+⓽급여가 전체 사원 급여 합계의 10%를 초과하는 사원이 이름과 급여를 출력하시오.
+
+SELECT ename, sal 
+FROM Emp 
+WHERE sal > (
+SELECT SUM(sal) * 0.1 
+FROM Emp);
+
+KING, FORD, SCOTT
+⓾BLAKE와 같은 직위(job)를 가진 사원의 이름과 급여를 출력하시오(BLAKE 본인 제외)
+
+SELECT ename, sal 
+FROM Emp 
+WHERE sal > (
+SELECT SUM(sal) * 0.1 
+FROM Emp);
+
+JONES, CLARK
+
+⑪30번 부서에 속한 사원과 같은 직위(job)를 가진 모든 사원을 출력하시오. 
+
+SELECT * FROM Emp 
+WHERE job IN (
+SELECT DISTINCT job 
+FROM Emp 
+WHERE deptno = 30);
+
+CLERK, SALESMAN...
+
+⑫급여가 모든 CLERK보다 많은 사원의 이름과 급여를 출력하시오(ALL)
+
+SELECT ename, sal 
+FROM Emp 
+WHERE sal > ALL (
+SELECT sal 
+FROM Emp 
+WHERE job = 'CLERK');
+
+KING, JONES
+
+⑬SALESMAN 중 누구보다도 급여가 많은 사원의 이름과 급여를 출력하시오.(ANY)
+
+SELECT ename, sal 
+FROM Emp 
+WHERE sal > ANY (
+SELECT sal 
+FROM Emp 
+WHERE job = 'SALESMAN');
+
+
+⑭부하 직원이 존재하는 (관리자인) 사원의 이름과 직위를 출력하시오(EXITS)
+
+SELECT ename, job 
+FROM Emp e 
+WHERE EXISTS (
+SELECT 1 
+FROM Emp m 
+WHERE m.mgr = e.empno);
+
+KING, JONES, BLAKE
+
+⑮급여 상위 3위 안에 드는 사원의 이름과 급여를 출력하시오.
+ 
+SELECT ename, sal 
+FROM (
+SELECT ename, sal 
+FROM Emp 
+ORDER BY sal DESC) 
+WHERE ROWNUM <= 3;
+
+KING, FORD, SCOTT
+
+(4)조인질의
+
+⓵사원의 이름과 소속 부서 이름을 출력하시오.
+
+SELECT e.ename, d.dname 
+FROM Emp e 
+JOIN Dept d ON e.deptno = d.deptno;
+
+SMITH, RESEARCH 
+
+⓶사원의 이름과 팀장의 이름을 출력하시오.(셀프 조인)
+ SELECT e.ename AS "사원", m.ename AS "팀장" 
+FROM Emp e JOIN Emp m ON e.mgr = m.empno;
+
+SMITH, FORD
+
+⓷사원이 한 명도 없는 부서의 이름을 출력하시오.
+
+ SELECT d.dname 
+FROM Dept d LEFT JOIN Emp e ON d.deptno = e.deptno 
+WHERE e.empno IS NULL;
+
+OPERATIONS
+
+⓸NEW YORK에 근무하는 사원의 이름과 업무를 출력하시오.
+ 
+SELECT e.ename, e.job 
+FROM Emp e JOIN Dept d ON e.deptno = d.deptno 
+WHERE d.loc = 'NEW YORK';
+
+CLARK, MANAGER
+
+⑤사원이름, 급여, 급여 등급을 출력하시오.(SALGRADE 활용)
+ 
+SELECT e.ename, e.sal, s.grade 
+FROM Emp e, Salgrade s 
+WHERE e.sal 
+BETWEEN s.losal AND s.hisal;
+
+SMITH, 800, 1
+
+★★★⓺사원이름, 급여, 급여 등급, 부서 이름을 한 번에 출력하시오.
+ SELECT e.ename, e.sal, s.grade, d.dname 
+FROM Emp e 
+JOIN Dept d ON e.deptno = d.deptno 
+JOIN Salgrade s ON e.sal BETWEEN s.losal AND s.hisal;
+
+SMITH, 800, 1, RESEARCH
+
+⓻자신의 상관보다 급여가 높은 사원의 이름과 두 사람의 급여를 출력하시오.
+SELECT e.ename, e.sal, m.sal 
+FROM Emp e 
+JOIN Emp m ON e.mgr = m.empno 
+WHERE e.sal > m.sal;
+ 
+SCOTT, 3000, 2975
+
+⓼사원 이름, 부서이름, 근무 도시를 출력하시오.
+SELECT e.ename, d.dname, d.loc 
+FROM Emp e 
+JOIN Dept d ON e.deptno = d.deptno; 
+
+ALLEN, SALES, CHICAGO
+
+⓽CHOICAGO에 근무하는 사원 수를 출력하시오.
+ 
+SELECT COUNT(*) 
+FROM Emp e JOIN Dept d ON e.deptno = d.deptno 
+WHERE d.loc = 'CHICAGO';
+
+6
+
+★★★⓾부서별 인원 수가 많은 순으로 부서번호, 부서이름, 인원수를 출력하시오.
+SELECT d.deptno, d.dname, 
+COUNT(e.empno) AS "cnt" 
+FROM Dept d LEFT JOIN Emp e ON d.deptno = e.deptno 
+GROUP BY d.deptno, d.dname 
+ORDER BY cnt DESC;
+
+30, SALES, 6
+
+⑪부서별 평균 급여를 부서이름과 함께 출력하시오.
+ 
+SELECT d.dname, AVG(e.sal) 
+FROM Emp e JOIN Dept d ON e.deptno = d.deptno 
+GROUP BY d.dname;
+
+RESEARCH, 2175
+
+★★★⑫급여 등급이 3등급인 사원의 이름, 급여, 부서이름을 출력하시오.
+ 
+SELECT e.ename, e.sal, d.dname 
+FROM Emp e JOIN Dept d ON e.deptno = d.deptno 
+JOIN Salgrade s ON e.sal BETWEEN s.losal AND s.hisal 
+WHERE s.grade = 3;
+
+ALLEN, 1600, SALES
+
+⑬사원의 이음, 입사일, 입사 요일을 부서이름과 함께 출력하시오.
+ 
+SELECT e.ename, e.hiredate, TO_CHAR(e.hiredate, 'DAY'), d.dname 
+FROM Emp e JOIN Dept d ON e.deptno = d.deptno;
+
+SMITH, 80/12/17, 수요일
+
+⑭같은 부서에서 근무하는 사원끼리 이름을 나란히 출력하시오.(셀프 조인, 중복제거)
+ 
+SELECT e1.ename, e2.ename 
+FROM Emp e1 JOIN Emp e2 ON e1.deptno = e2.deptno 
+WHERE e1.ename < e2.ename;
+
+SMITH, FORD, RESEARCH
+
+⑮사원이름, 상관이름, 상관의 부서이름을 출력하시오(셀프+DEPTt조인)
+ 
+SELECT job, MAX(sal), MIN(sal), AVG(sal), COUNT(*) 
+FROM Emp 
+GROUP BY job;
+
+MANAGER, 2975, 2450...
+
+(5)집계질의
+
+⓵업무별 최고, 최소, 평균 급여와 사원 수를 출력하시오.
+
+SELECT job, MAX(sal), MIN(sal), AVG(sal), COUNT(*) 
+FROM Emp 
+GROUP BY job;
+ 
+MANAGER, 2975, 2450...
+
+⓶부서별, 업무별 인원수를 출력하시오.
+
+SELECT deptno, job, COUNT(*) 
+FROM Emp 
+GROUP BY deptno, job;
+
+10, MANAGER, 1
+
+⓷직원별 총 급여(sal*12+comm)를 내림차순으로 출력하시오.
+ 
+SELECT ename, (sal * 12 + NVL(comm, 0)) AS "total" 
+FROM Emp 
+ORDER BY total DESC;
+ 
+KING, 60000
+
+⓸평균 급여보다 높은 급여를 받는 부서(번호)와 해당 부서의 평균 급여를 출력하시오
+
+SELECT deptno, AVG(sal) 
+FROM Emp 
+GROUP BY deptno 
+HAVING AVG(sal) > (
+SELECT AVG(sal) 
+FROM Emp);
+
+20, 2175
+
+
+⑤입사년도별 사원 수를 출력하시오.
+
+SELECT TO_CHAR(hiredate, 'YYYY'), COUNT(*) 
+FROM Emp 
+GROUP BY TO_CHAR(hiredate, 'YYYY');
+
+1981, 10
+
+
+⓺급여 등급별 사원 수와 평균 급여를 출력하시오
+
+SELECT s.grade, COUNT(*), AVG(e.sal) 
+FROM Emp e JOIN Salgrade s ON e.sal BETWEEN s.losal 
+AND s.hisal 
+GROUP BY s.grade;
+ 
+1, 3, 900
+
+
+⓻총급여가 5000 이상인 부서의 번호와 합계를 출력하시오.
+
+SELECT deptno, SUM(sal) 
+FROM Emp 
+GROUP BY deptno 
+HAVING SUM(sal) >= 5000;
+
+20, 10875
+
+
+⓼각 사원의 급여가 전체 급여 합계에서 차지하는 비율(%)을 출력하시오.
+
+`SELECT ename, ROUND(sal / (SELECT SUM(sal) 
+FROM Emp) * 100, 2)
+
+'%' FROM Emp;`
+
+⓽근속 연수 10년 이상인 사원의 이름, 입사일, 근속 연수를 출력하시오.
+ 
+SELECT ename, hiredate, TRUNC(MONTHS_BETWEEN(SYSDATE, hiredate)/12) AS "career" FROM Emp 
+WHERE MONTHS_BETWEEN(SYSDATE, hiredate)/12 >= 10; 
+
+SMITH, 1980..., 45
+
+
+⓾급여 상위 5명의 사원 이름과 급여를 출력하시오
+SELECT ename, sal 
+FROM (
+SELECT ename, sal 
+FROM Emp ORDER BY sal DESC) 
+WHERE ROWNUM <= 5;
